@@ -1,0 +1,141 @@
+/* body{
+    /* background-color: #1A1423; *
+} */
+.blog-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px;
+}
+
+.blog-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* gap: 10px; */
+    padding: 20px;
+    background-color: aliceblue;
+    border-radius: 10px;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+}
+
+.bg{
+    background-color: aliceblue;
+}
+
+.blog-item h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+.blog-content {
+    font-size: 16px;
+    font-weight: 400;
+    color: #333;
+}
+
+.views-count {
+    margin-right: 10px;
+    color: #333;
+    font-size: 14px;
+    font-weight: 400;
+    border: 1px solid #333;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    display: inline-block;
+}
+
+.likes-count {
+    margin-left: 10px;
+    color: #333;
+    font-size: 14px;
+    font-weight: 400;
+    border: 1px solid #333;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    display: inline-block;
+}
+
+.blog-author-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.blog-author-name {
+    font-size: 14px;
+    font-weight: 400;
+    color: #333;
+}
+
+.blog-item:hover {
+    box-shadow: 0 4px 10px darkgray;
+}
+
+a{
+    text-decoration: none;
+}
+
+/* views.ejs */
+.blog-page {
+    background-color: #f9fafb;
+    padding: 60px 20px;
+}
+
+.blog-article {
+    max-width: 800px;
+    margin: auto;
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+/* Title */
+.blog-title {
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #111827;
+}
+
+/* Meta info */
+.blog-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin-bottom: 30px;
+}
+
+/* Content */
+.blog-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #374151;
+    margin-bottom: 40px;
+}
+
+/* Footer */
+.blog-footer {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 20px;
+}
+
+.blog-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.stat {
+    background: #f3f4f6;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}

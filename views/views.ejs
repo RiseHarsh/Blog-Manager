@@ -1,0 +1,44 @@
+<main class="blog-page">
+
+    <article class="blog-article">
+
+        <header class="blog-header">
+            <h1 class="blog-title">
+                <%= indblog.title %>
+            </h1>
+
+            <div class="blog-meta">
+                <span class="blog-author">
+                    <%= indblog.author %>
+                </span>
+                <span class="blog-date">
+                    <%= new Date(indblog.createdAt).toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: '2-digit',
+                        year: 'numeric'
+                    }) %>
+                </span>
+            </div>
+        </header>
+
+        <section class="blog-content">
+            <p>
+                <%= indblog.content %>
+            </p>
+        </section>
+
+        <footer class="blog-footer">
+            <div class="blog-stats">
+                <span class="stat">
+                    👁️ <strong><%= indblog.views %></strong> views
+                </span>
+
+                <span class="stat">
+                    👍 <strong><%= indblog.likes %></strong> likes
+                </span>
+            </div>
+        </footer>
+
+    </article>
+
+</main>

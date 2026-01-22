@@ -9,6 +9,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "ejs": "^4.0.1"
+    "ejs": "^4.0.1",
+    "express": "^5.2.1",
+    "express-ejs-layouts": "^2.5.1",
+    "mongodb": "^6.21.0",
+    "mongoose": "^8.21.0",
+    "nodemon": "^3.1.11"
   }
 }
