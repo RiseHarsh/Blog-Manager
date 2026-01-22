@@ -1,58 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog Manager</title>
-    <link rel="stylesheet" href="/style.css">
-</head>
-
-<body>
-    <div class="blog-container">
-        <% for (let b of blog) { %>
-            <a href="/blogs/views/<%= b.id %>">
-            <div class="blog-item">
+<div class="blog-container">
+    <% for (let b of blog) { %>
+        <div class="blog-item">
+            <a href="/blogs/views/<%= b._id %>" class="blog-link" data-id="<%= b._id %>">
                 <div>
-                    <h2>
-                        <%= b.title %>
-                    </h2>
+                    <h2><%= b.title %></h2>
                 </div>
                 <div class="blog-author-info">
                     <p class="blog-author-name">
-                        <%= b.author %> | <span class="blog-author-date">
-                                <%= new Date(b.createdAt).toLocaleDateString('en-US', { month: 'short' , day: '2-digit'
-                                    , year: 'numeric' }) %>
-                            </span>
+                        <%= b.author %> | 
+                        <span class="blog-author-date">
+                            <%= new Date(b.createdAt).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: '2-digit', 
+                                year: 'numeric' 
+                            }) %>
+                        </span>
                     </p>
                 </div>
                 <p class="blog-content">
                     <%= b.content %>
                 </p>
                 <p>
-                    <span class="views-count">
-                        👁️ <%= b.views %>
-                            <%= b.views===1 ? 'view' : 'views' %>
-                    </span><span class="likes-count">👍 <%= b.likes %>
-                            <%= b.likes===1 ? 'like' : 'likes' %></span>
+                    <span class="views-count">👁️ <%= b.views %> <%= b.views===1 ? 'view' : 'views' %></span>
+                    <span class="likes-count">👍 <%= b.likes %> <%= b.likes===1 ? 'like' : 'likes' %></span>
                 </p>
-            </div>
             </a>
-
-            <% } %>
+        </div>
+    <% } %>
+</div>
+<section class="hero-cta">
+    <div class="hero-content">
+        <h1>Share Your Thoughts With The World</h1>
+        <p>Join 200+ authors and explore 500+ blogs. Start writing or reading amazing content today!</p>
+        <div class="cta-buttons">
+            <a href="/login" class="primary-cta">Get Started</a>
+            <a href="/blogs" class="secondary-cta">Browse Blogs</a>
+        </div>
     </div>
-</body>
+    <div class="hero-image">
+        <img src="/images/blogging.png" alt="Blog illustration">
+    </div>
+</section>
 
-</html>
 
+<script>
+    // Increment views dynamically before navigation
+    document.querySelectorAll('.blog-link').forEach(link => {
+        link.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const blogId = this.dataset.id;
 
-<!-- <% for (let b of blog) { %>
-        <h2><%= b.title %></h2>
-        <p><%= b.content %></p>
-        <p><%= b.createdAt %></p>
-        <p><%= b.updatedAt %></p>
-        <p><%= b.views %></p>
-        <p><%= b.likes %></p>
-        <p><%= b.tags %></p>
-        <p><%= b.status %></p>
-    <% } %> -->
+            try {
+                const response = await fetch(`/blogs/${blogId}/increment-views`, { method: 'POST' });
+                const data = await response.json();
+
+                if (data.views !== undefined) {
+                    const viewsElem = this.querySelector('.views-count');
+                    if (viewsElem) {
+                        viewsElem.textContent = `👁️ ${data.views} ${data.views === 1 ? 'view' : 'views'}`;
+                    }
+                }
+
+                // Navigate to the blog detail page after updating views
+                window.location.href = `/blogs/views/${blogId}`;
+            } catch (err) {
+                console.error('Failed to increment views:', err);
+                window.location.href = `/blogs/views/${blogId}`;
+            }
+        });
+    });
+</script>
