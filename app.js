@@ -36,6 +36,20 @@ app.use(session({
     cookie: { maxAge: 1000 * 60 * 60 } // 1 hour
 }));
 
+// Middleware to make user available in all views
+app.use((req, res, next) => {
+    if (req.session.userId) {
+        res.locals.user = {
+            id: req.session.userId,
+            name: req.session.userName
+        };
+    } else {
+        res.locals.user = null;
+    }
+    next();
+});
+
+
 
 // Defining a function to fetch blogs and render main page
 async function renderBlogList(req, res) {
@@ -131,28 +145,48 @@ app.post('/auth/signup', async (req,res) => {
         });
     }
 });
-
   
 
 // Login
 app.get('/login', (req,res) =>{
     res.render("login.ejs")
 });
+
 app.post('/auth/login', async (req,res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
-        if (!user) return res.send('User not found');
+        if (!user) {
+            return res.render('login', { error: 'User not found' });
+        }
 
         const match = await user.comparePassword(password);
-        if (!match) return res.send('Incorrect password');
+        if (!match) {
+            return res.render('login', { error: 'Incorrect password' });
+        }
 
-        res.send(`Welcome ${user.name}!`);
+        // ✅ Create session
+        req.session.userId = user._id;
+        req.session.userName = user.name;
+
+        res.redirect('/');
     } catch(err) {
         console.error(err);
         res.status(500).send('Server error');
     }
 });
+
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error(err);
+            return res.redirect('/');
+        }
+        res.redirect('/');
+    });
+});
+
+
 
 //404 route
 app.use((req, res) => {

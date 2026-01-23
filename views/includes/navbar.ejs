@@ -2,7 +2,7 @@
     <div class="container">
         <!-- Brand (Logo and Text) -->
         <a class="navbar-brand d-flex align-items-center" href="/">
-            <span class="ms-2 h3" >Blog Manager</span>
+            <span class="ms-2 h3">Blog Manager</span>
         </a>
 
         <!-- Toggle Button (Mobile) -->
@@ -22,8 +22,35 @@
                 </li>
                 <!-- <li class="nav-item">
           <a class="nav-link " href="/login">Log In</a>
-        </li> -->
+            </li> -->
             </ul>
+
+            <div class="ms-lg-3">
+                <% if (user) { %>
+                    <div class="dropdown">
+                        <a class="btn px-4 nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" style="
+                        background-color: #e6f7f5;
+                        color: #0d9488;
+                        border-radius: 25px;
+                      ">
+                            Hi, <%= user.name %>
+                        </a>
+
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="/logout">Logout</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <% } else { %>
+                        <a href="/login" class="btn btn-primary px-4"
+                            style="background-color: #0d9488; border-radius: 25px">
+                            Get Started
+                        </a>
+                        <% } %>
+            </div>
+
         </div>
     </div>
 </nav>
