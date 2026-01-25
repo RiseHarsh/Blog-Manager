@@ -8,15 +8,14 @@ const blogSchema = new mongoose.Schema(
       trim: true
     },
 
-    slug: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true
-    },
-
     author: {
       type: String,
+      required: true
+    },
+
+    authorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',        // references the User model
       required: true
     },
 
@@ -44,10 +43,17 @@ const blogSchema = new mongoose.Schema(
       default: 0
     },
 
+    likedBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    ],
     likes: {
       type: Number,
       default: 0
     }
+
   },
   {
     timestamps: true // automatically adds createdAt & updatedAt

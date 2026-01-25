@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const blogs = require('./models/blogs');
 const User = require('./models/user')
 const expressLayouts = require('express-ejs-layouts');
+const MongoStore = require('connect-mongo').default;
 require('dotenv').config();
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -30,10 +31,16 @@ main().then(() => {
 const session = require('express-session');
 
 app.use(session({
-    secret: process.env.SESSION_SECRET, 
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 } // 1 hour
+    store: new MongoStore({
+        mongoUrl: 'mongodb://localhost:27017/blog_manager',
+        collectionName: 'sessions'
+    }),
+    cookie: {
+        maxAge: 1000 * 60 * 60
+    }
 }));
 
 // Middleware to make user available in all views
@@ -49,7 +56,20 @@ app.use((req, res, next) => {
     next();
 });
 
-
+// Middleware to attach logged-in user to req.user
+app.use(async (req, res, next) => {
+    if (req.session.userId) {
+        try {
+            const user = await User.findById(req.session.userId);
+            if (user) {
+                req.user = user;
+            }
+        } catch (err) {
+            console.error('Error fetching user in middleware:', err);
+        }
+    }
+    next();
+});
 
 // Defining a function to fetch blogs and render main page
 async function renderBlogList(req, res) {
@@ -65,7 +85,6 @@ async function renderBlogList(req, res) {
 // Using the same function for both routes
 app.get('/', renderBlogList);
 app.get('/blogs', renderBlogList);
-
 
 app.get('/blogs/views/:id', async (req, res) => {
     try {
@@ -100,6 +119,82 @@ app.post('/blogs/:id/increment-views', async (req, res) => {
         res.json({ views: updatedBlog.views });
     } catch (error) {
         console.error('Error incrementing views:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+function isLoggedIn(req, res, next) {
+    if (!req.session.userId) {
+        return res.redirect('/login');
+    }
+    next();
+}
+
+app.get('/myblogs', isLoggedIn, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+
+        // 1️⃣ Blogs created by the user
+        const createdBlogs = await blogs.find({ authorId: userId }).sort({ createdAt: -1 });
+
+        // 2️⃣ Blogs liked by the user
+        const likedBlogs = await blogs.find({ likedBy: userId }).sort({ createdAt: -1 });
+
+        res.render('myblogs.ejs', { createdBlogs, likedBlogs });
+    } catch (err) {
+        console.error('Error fetching my blogs:', err);
+        res.status(500).send('Server error');
+    }
+});
+
+//likes
+app.get('/likedblogs', isLoggedIn, async (req, res) => {
+    const likedBlogs = await blogs.find({
+        likedBy: req.session.userId
+    });
+
+    res.render('likedblogs.ejs', { blogs: likedBlogs });
+});
+
+app.post('/blogs/:id/like', isLoggedIn, async (req, res) => {
+    try {
+        const blogId = req.params.id;
+        const userId = req.session.userId;
+
+        const blog = await blogs.findById(blogId);
+        if (!blog) return res.status(404).json({ message: 'Blog not found' });
+
+        let updatedBlog;
+
+        if (blog.likedBy.includes(userId)) {
+            // User already liked -> unlike
+            updatedBlog = await blogs.findByIdAndUpdate(
+                blogId,
+                {
+                    $inc: { likes: -1 },
+                    $pull: { likedBy: userId }
+                },
+                { new: true }  // return updated doc
+            );
+        } else {
+            // Like
+            updatedBlog = await blogs.findByIdAndUpdate(
+                blogId,
+                {
+                    $inc: { likes: 1 },
+                    $addToSet: { likedBy: userId }
+                },
+                { new: true }
+            );
+        }
+
+        res.json({ 
+            likes: updatedBlog.likes,
+            likedByUser: updatedBlog.likedBy.includes(userId)
+        });
+
+    } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -145,7 +240,6 @@ app.post('/auth/signup', async (req,res) => {
         });
     }
 });
-  
 
 // Login
 app.get('/login', (req,res) =>{
@@ -176,6 +270,7 @@ app.post('/auth/login', async (req,res) => {
     }
 });
 
+//logout
 app.get('/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
@@ -186,7 +281,53 @@ app.get('/logout', (req, res) => {
     });
 });
 
+//add blogs
+app.get('/addblogs', isLoggedIn, async (req, res) => {
+    try {
+        const user = await User.findById(req.session.userId);
 
+        if (!user) {
+            return res.redirect('/login');
+        }
+
+        res.render('addnewblog.ejs', { user });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
+
+app.post('/addblogs', isLoggedIn, async (req, res) => {
+    try {
+        console.log('SESSION WHILE ADDING BLOG:', req.session);
+
+        if (!req.session || !req.session.userId) {
+            console.log('❌ No session userId');
+            return res.redirect('/login');
+        }
+
+        const { title, content, tags } = req.body;
+
+        const newBlog = new blogs({
+            title,
+            content,
+            content,
+            tags: tags
+                .split(',')
+                .map(t => t.trim())
+                .filter(t => t.length > 0),
+            author: req.session.userName,
+            authorId: req.session.userId   // ✅ MUST exist
+        });
+
+        await newBlog.save();
+        res.redirect('/myblogs');
+
+    } catch (err) {
+        console.error('BLOG CREATE ERROR:', err);
+        res.status(500).send('Failed to create blog');
+    }
+});
 
 //404 route
 app.use((req, res) => {

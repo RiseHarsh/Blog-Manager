@@ -3,30 +3,51 @@
         <div class="blog-item">
             <a href="/blogs/views/<%= b._id %>" class="blog-link" data-id="<%= b._id %>">
                 <div>
-                    <h2><%= b.title %></h2>
+                    <h2>
+                        <%= b.title %>
+                    </h2>
                 </div>
                 <div class="blog-author-info">
                     <p class="blog-author-name">
-                        <%= b.author %> | 
-                        <span class="blog-author-date">
-                            <%= new Date(b.createdAt).toLocaleDateString('en-US', { 
-                                month: 'short', 
-                                day: '2-digit', 
-                                year: 'numeric' 
-                            }) %>
-                        </span>
+                        <%= b.author %> |
+                            <span class="blog-author-date">
+                                <%= new Date(b.createdAt).toLocaleDateString('en-US', { month: 'short' , day: '2-digit'
+                                    , year: 'numeric' }) %>
+                            </span>
                     </p>
                 </div>
                 <p class="blog-content">
                     <%= b.content %>
                 </p>
                 <p>
-                    <span class="views-count">👁️ <%= b.views %> <%= b.views===1 ? 'view' : 'views' %></span>
-                    <span class="likes-count">👍 <%= b.likes %> <%= b.likes===1 ? 'like' : 'likes' %></span>
+                    <span class="views-count">👁️ <%= b.views %>
+                            <%= b.views===1 ? 'view' : 'views' %>
+                    </span>
+
+                    <button class="like-btn <%= b.likedBy.includes(user?.id) ? 'liked' : '' %>" data-id="<%= b._id %>">
+                        <span class="likes-count">
+                            👍 <%= b.likes %> <%= b.likes === 1 ? 'like' : 'likes' %>
+                        </span>
+                    </button>
+                    
+
                 </p>
+                <div class="blog-hashtags">
+                    <span class="hashtags">
+                        <% if (b.tags && b.tags.filter(t=> t).length > 0) { %>
+                            Hashtags:
+                            <% b.tags.forEach(tag=> { %>
+                                <span class="tag">#<%= tag %></span>
+                                <% }) %>
+                                    <% } else { %>
+                                        No Tags Found
+                                        <% } %>
+                    </span>
+                </div>
+
             </a>
         </div>
-    <% } %>
+        <% } %>
 </div>
 <section class="hero-cta">
     <div class="hero-content">
@@ -44,29 +65,76 @@
 
 
 <script>
-    // Increment views dynamically before navigation
-    document.querySelectorAll('.blog-link').forEach(link => {
-        link.addEventListener('click', async function(e) {
-            e.preventDefault();
-            const blogId = this.dataset.id;
-
-            try {
-                const response = await fetch(`/blogs/${blogId}/increment-views`, { method: 'POST' });
-                const data = await response.json();
-
-                if (data.views !== undefined) {
-                    const viewsElem = this.querySelector('.views-count');
-                    if (viewsElem) {
-                        viewsElem.textContent = `👁️ ${data.views} ${data.views === 1 ? 'view' : 'views'}`;
+    document.addEventListener('DOMContentLoaded', () => {
+    
+        // -------------------------------
+        // Increment views dynamically
+        // -------------------------------
+        document.querySelectorAll('.blog-link').forEach(link => {
+            link.addEventListener('click', async function (e) {
+                e.preventDefault();
+                const blogId = this.dataset.id;
+    
+                try {
+                    const response = await fetch(`/blogs/${blogId}/increment-views`, { method: 'POST' });
+                    const data = await response.json();
+    
+                    // Update views count in UI
+                    if (data.views !== undefined) {
+                        const viewsElem = this.querySelector('.views-count');
+                        if (viewsElem) {
+                            viewsElem.textContent = `👁️ ${data.views} ${data.views === 1 ? 'view' : 'views'}`;
+                        }
                     }
+    
+                    // Navigate to blog detail page after updating views
+                    window.location.href = `/blogs/views/${blogId}`;
+                } catch (err) {
+                    console.error('Failed to increment views:', err);
+                    window.location.href = `/blogs/views/${blogId}`;
                 }
-
-                // Navigate to the blog detail page after updating views
-                window.location.href = `/blogs/views/${blogId}`;
-            } catch (err) {
-                console.error('Failed to increment views:', err);
-                window.location.href = `/blogs/views/${blogId}`;
-            }
+            });
+        });
+    
+        // -------------------------------
+        // Like / Unlike functionality
+        // -------------------------------
+        document.querySelectorAll('.like-btn').forEach(btn => {
+            btn.addEventListener('click', async function (e) {
+                e.preventDefault();
+                e.stopPropagation(); // prevent opening the blog detail page
+    
+                const blogId = this.dataset.id;
+                const likesCountElem = this.querySelector('.likes-count');
+    
+                try {
+                    const response = await fetch(`/blogs/${blogId}/like`, { method: 'POST' });
+    
+                    // If not logged in, redirect to login
+                    if (response.status === 401 || response.redirected) {
+                        window.location.href = '/login';
+                        return;
+                    }
+    
+                    const data = await response.json();
+    
+                    // Update likes count
+                    if (data.likes !== undefined) {
+                        likesCountElem.textContent = `👍 ${data.likes} ${data.likes === 1 ? 'like' : 'likes'}`;
+                    }
+    
+                    // Toggle 'liked' class
+                    if (data.likedByUser) {
+                        this.classList.add('liked');
+                    } else {
+                        this.classList.remove('liked');
+                    }
+    
+                } catch (err) {
+                    console.error('Error toggling like:', err);
+                }
+            });
         });
     });
-</script>
+    </script>
+    

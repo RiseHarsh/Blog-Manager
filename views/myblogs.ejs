@@ -1,0 +1,54 @@
+<!-- Created Blogs -->
+<div class="myblogs-header">
+    <h2>My Blogs</h2>
+    <a href="/addblogs" class="btn-primary">+ Add New Blog</a>
+</div>
+
+<% if (!createdBlogs || createdBlogs.length === 0) { %>
+    <div class="empty-state">
+        <p>You haven’t written any blogs yet.</p>
+        <a href="/addblogs" class="btn-secondary">Write your first blog</a>
+    </div>
+<% } else { %>
+    <div class="blogs-grid">
+        <% createdBlogs.forEach(blog => { %>
+            <div class="blog-card">
+                <h3><%= blog.title %></h3>
+                <p class="blog-excerpt"><%= blog.content.substring(0, 160) %>...</p>
+                <div class="blog-meta">
+                    <span>👁 <%= blog.views %></span>
+                    <span>❤️ <%= blog.likes %></span>
+                </div>
+                <div class="blog-actions">
+                    <a href="/blogs/views/<%= blog._id %>">View</a>
+                    <a href="/blogs/edit/<%= blog._id %>">Edit</a>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+<% } %>
+
+<!-- Liked Blogs -->
+<div class="liked-section">
+    <h2>Liked Blogs</h2>
+
+    <% if (!likedBlogs || likedBlogs.length === 0) { %>
+        <p class="muted">You haven’t liked any blogs yet ✨</p>
+    <% } else { %>
+        <div class="blogs-grid">
+            <% likedBlogs.forEach(blog => { %>
+                <div class="blog-card">
+                    <h3><%= blog.title %></h3>
+                    <p class="blog-excerpt"><%= blog.content.substring(0, 160) %>...</p>
+                    <div class="blog-meta">
+                        <span>👁 <%= blog.views %></span>
+                        <span>❤️ <%= blog.likes %></span>
+                    </div>
+                    <div class="blog-actions">
+                        <a href="/blogs/views/<%= blog._id %>">View</a>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
+</div>

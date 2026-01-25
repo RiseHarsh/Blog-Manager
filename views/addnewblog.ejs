@@ -1,0 +1,16 @@
+<form action="/addblogs" method="post" class="add-blog-form">
+
+    <label>Author</label>
+    <input type="text" name="author" value="<%= user.name %>" readonly>
+
+    <label>Title</label>
+    <input type="text" name="title" placeholder="Enter the title" required>
+
+    <label>Content</label>
+    <textarea name="content" rows="10" placeholder="Write your content here..." required></textarea>
+
+    <label>Tags</label>
+    <input type="text" name="tags" placeholder="e.g. javascript, node, backend">
+
+    <button type="submit">Publish Blog</button>
+</form>
