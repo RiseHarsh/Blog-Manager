@@ -23,7 +23,8 @@ app.use(expressLayouts);
 app.set('layout', 'layouts/boilerplate');
 
 async function main() {
-    await mongoose.connect('mongodb://localhost:27017/blog_manager');
+    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/blog_manager';
+    await mongoose.connect(mongoUri);
 }
 main().then(() => {
     console.log('Connected to MongoDB');
@@ -191,7 +192,7 @@ app.post('/blogs/:id/like', isLoggedIn, async (req, res) => {
             );
         }
 
-        res.json({ 
+        res.json({
             likes: updatedBlog.likes,
             likedByUser: updatedBlog.likedBy.includes(userId)
         });
@@ -203,28 +204,28 @@ app.post('/blogs/:id/like', isLoggedIn, async (req, res) => {
 });
 
 //login page
-app.post('/auth/signup', async (req,res) => {
+app.post('/auth/signup', async (req, res) => {
     try {
         const { name, email, password, confirmPassword } = req.body;
 
         if (!name || !email || !password || !confirmPassword) {
-            return res.render('login', { 
-                error: 'All fields are required', 
-                activeTab: 'signup' 
+            return res.render('login', {
+                error: 'All fields are required',
+                activeTab: 'signup'
             });
         }
 
         if (password !== confirmPassword) {
-            return res.render('login', { 
-                error: 'Passwords do not match', 
-                activeTab: 'signup' 
+            return res.render('login', {
+                error: 'Passwords do not match',
+                activeTab: 'signup'
             });
         }
 
         const exists = await User.findOne({ email });
-        if (exists) return res.render('login', { 
-            error: 'User already exists', 
-            activeTab: 'signup' 
+        if (exists) return res.render('login', {
+            error: 'User already exists',
+            activeTab: 'signup'
         });
 
         const user = new User({ name, email, password });
@@ -237,19 +238,19 @@ app.post('/auth/signup', async (req,res) => {
         res.redirect('/'); // redirect after successful signup
     } catch (err) {
         console.error(err);
-        res.status(500).render('login', { 
-            error: 'Server error occurred', 
-            activeTab: 'signup' 
+        res.status(500).render('login', {
+            error: 'Server error occurred',
+            activeTab: 'signup'
         });
     }
 });
 
 // Login
-app.get('/login', (req,res) =>{
+app.get('/login', (req, res) => {
     res.render("login.ejs")
 });
 
-app.post('/auth/login', async (req,res) => {
+app.post('/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
@@ -267,7 +268,7 @@ app.post('/auth/login', async (req,res) => {
         req.session.userName = user.name;
 
         res.redirect('/');
-    } catch(err) {
+    } catch (err) {
         console.error(err);
         res.status(500).send('Server error');
     }
@@ -387,7 +388,7 @@ app.post('/editblog/:id', isLoggedIn, async (req, res) => {
 });
 
 //destroy route
-app.delete('/deleteblog/:id', isLoggedIn , async (req,res)=>{
+app.delete('/deleteblog/:id', isLoggedIn, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -402,7 +403,7 @@ app.delete('/deleteblog/:id', isLoggedIn , async (req,res)=>{
             return res.status(403).send('Unauthorized');
         }
 
-        await blogs.findByIdAndDelete(id);  
+        await blogs.findByIdAndDelete(id);
 
         res.redirect('/myblogs');
     } catch (err) {
