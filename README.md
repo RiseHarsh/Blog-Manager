@@ -95,7 +95,8 @@ Open in your browser:
 http://localhost:8080
 
 
-#🔐 License
+##🔐 License
+
 This project is licensed under the MIT License — feel free to explore, learn, or adapt it for your own projects.
 See the LICENSE file for details.
 
