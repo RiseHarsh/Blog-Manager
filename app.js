@@ -7,6 +7,9 @@ const User = require('./models/user')
 const expressLayouts = require('express-ejs-layouts');
 const MongoStore = require('connect-mongo').default;
 require('dotenv').config();
+const methodOverride = require('method-override');
+app.use(methodOverride('_method'));
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'views')));
@@ -311,7 +314,6 @@ app.post('/addblogs', isLoggedIn, async (req, res) => {
         const newBlog = new blogs({
             title,
             content,
-            content,
             tags: tags
                 .split(',')
                 .map(t => t.trim())
@@ -326,6 +328,86 @@ app.post('/addblogs', isLoggedIn, async (req, res) => {
     } catch (err) {
         console.error('BLOG CREATE ERROR:', err);
         res.status(500).send('Failed to create blog');
+    }
+});
+
+// Edit blog route
+app.get('/editblog/:id', isLoggedIn, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const user = await User.findById(req.session.userId);
+        const blog = await blogs.findById(id);
+
+        if (!blog) {
+            return res.status(404).send('Blog not found');
+        }
+
+        // 🔐 Ownership check
+        if (blog.authorId.toString() !== req.session.userId) {
+            return res.status(403).send('Unauthorized');
+        }
+
+        res.render('editblog.ejs', { user, blog });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
+
+// Update blog route
+app.post('/editblog/:id', isLoggedIn, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, content, tags } = req.body;
+
+        const blog = await blogs.findById(id);
+
+        if (!blog) {
+            return res.status(404).send('Blog not found');
+        }
+
+        // 🔐 Ownership check before updating
+        if (blog.authorId.toString() !== req.session.userId) {
+            return res.status(403).send('Unauthorized');
+        }
+
+        // Update fields
+        blog.title = title;
+        blog.content = content;
+        blog.tags = tags.split(',').map(t => t.trim());
+
+        await blog.save();
+
+        res.redirect('/myblogs');
+    } catch (err) {
+        console.error('Update blog error:', err);
+        res.status(500).send('Server error');
+    }
+});
+
+//destroy route
+app.delete('/deleteblog/:id', isLoggedIn , async (req,res)=>{
+    try {
+        const { id } = req.params;
+
+        const blog = await blogs.findById(id);
+
+        if (!blog) {
+            return res.status(404).send('Blog not found');
+        }
+
+        // 🔐 Ownership check before updating
+        if (blog.authorId.toString() !== req.session.userId) {
+            return res.status(403).send('Unauthorized');
+        }
+
+        await blogs.findByIdAndDelete(id);  
+
+        res.redirect('/myblogs');
+    } catch (err) {
+        console.error('Update blog error:', err);
+        res.status(500).send('Server error');
     }
 });
 

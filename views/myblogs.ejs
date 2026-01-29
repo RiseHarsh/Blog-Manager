@@ -21,8 +21,12 @@
                 </div>
                 <div class="blog-actions">
                     <a href="/blogs/views/<%= blog._id %>">View</a>
-                    <a href="/blogs/edit/<%= blog._id %>">Edit</a>
+                    <a href="/editblog/<%= blog._id %>">Edit</a>
+                    <button class="delete-btn" onclick="deleteBlog('<%= blog._id %>')">
+                        Delete
+                    </button>
                 </div>
+                
             </div>
         <% }) %>
     </div>
@@ -52,3 +56,15 @@
         </div>
     <% } %>
 </div>
+
+<script>
+    function deleteBlog(id) {
+        if (confirm('Are you sure?')) {
+            fetch('/deleteblog/' + id, { method: 'DELETE' })
+                .then(res => {
+                    if (res.ok) location.reload();
+                    else alert('Failed to delete blog');
+                });
+        }
+    }
+    </script>    

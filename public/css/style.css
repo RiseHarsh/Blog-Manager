@@ -378,7 +378,7 @@ form button[type="submit"]:hover {
     margin-bottom: 15px;
   }
   
-  .blog-actions {
+  /* .blog-actions {
     display: flex;
     gap: 15px;
   }
@@ -388,11 +388,11 @@ form button[type="submit"]:hover {
     text-decoration: none;
     color: #0d9488;
     font-weight: 500;
-  }
-  
+    } 
+    
   .blog-actions a:hover {
     text-decoration: underline;
-  }
+  }*/
   
   .liked-section {
     margin-top: 60px;
@@ -407,7 +407,61 @@ form button[type="submit"]:hover {
     color: #888;
     font-size: 14px;
   }
-  
+  /* delete btn */
+  .delete-btn {
+    position: relative;
+}
+
+.delete-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: currentColor;
+    transition: width 0.2s ease;
+}
+
+.delete-btn:hover::after {
+    width: 100%;
+}
+/* blog action */
+.blog-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+/* shared action look */
+.blog-actions a,
+.blog-actions button {
+    font-size: 14px;
+    font-weight: 500;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: none;
+    color: #0d9488;
+    transition: color 0.2s ease;
+}
+
+/* hover */
+.blog-actions a:hover,
+.blog-actions button:hover {
+    text-decoration: underline;
+}
+
+/* delete-specific styling */
+.delete-btn {
+    color: #dc2626; /* soft red */
+}
+
+.delete-btn:hover {
+    color: #b91c1c;
+}
+
 
   /* likes */
   .like-btn {
