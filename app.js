@@ -9,10 +9,12 @@ const MongoStore = require('connect-mongo').default;
 require('dotenv').config();
 const methodOverride = require('method-override');
 app.use(methodOverride('_method'));
+const connectToDatabase = require('./db');
+const session = require('express-session');
 
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'views')));
+// app.use(express.static(path.join(__dirname, 'views')));
 app.use(express.static(path.join(__dirname, 'assets')));
 
 app.set('view engine', 'ejs');
@@ -22,58 +24,105 @@ app.use(express.json());
 app.use(expressLayouts);
 app.set('layout', 'layouts/boilerplate');
 
-async function main() {
-    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/blog_manager';
-    await mongoose.connect(mongoUri);
-}
-main().then(() => {
-    console.log('Connected to MongoDB');
-}).catch((err) => {
-    console.log(err);
-});
-
-const session = require('express-session');
-
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    store: new MongoStore({
-        mongoUrl: 'mongodb://localhost:27017/blog_manager',
-        collectionName: 'sessions'
-    }),
-    cookie: {
-        maxAge: 1000 * 60 * 60
-    }
-}));
-
-// Middleware to make user available in all views
-app.use((req, res, next) => {
+// ✅ Session config
+app.use(
+    session({
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: false,
+      store: new MongoStore({
+        mongoUrl: process.env.MONGO_URI,
+        collectionName: 'sessions',
+      }),
+      cookie: { maxAge: 1000 * 60 * 60 },
+    })
+  );
+  
+  // Middleware to attach user to views
+  app.use(async (req, res, next) => {
     if (req.session.userId) {
-        res.locals.user = {
-            id: req.session.userId,
-            name: req.session.userName
-        };
+      res.locals.user = { id: req.session.userId, name: req.session.userName };
+      try {
+        req.user = await User.findById(req.session.userId);
+      } catch (err) {
+        console.error(err);
+      }
     } else {
-        res.locals.user = null;
+      res.locals.user = null;
     }
     next();
-});
+  });
+  
+  // Connect to DB and start server
+  connectToDatabase()
+    .then(() => {
+      console.log('Connected to MongoDB');
+      const PORT = process.env.PORT || 8080;
+      app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    })
+    .catch((err) => {
+      console.error('Failed to connect to MongoDB:', err);
+      process.exit(1);
+    });
 
-// Middleware to attach logged-in user to req.user
-app.use(async (req, res, next) => {
-    if (req.session.userId) {
-        try {
-            const user = await User.findById(req.session.userId);
-            if (user) {
-                req.user = user;
-            }
-        } catch (err) {
-            console.error('Error fetching user in middleware:', err);
-        }
-    }
-    next();
-});
+// connectToDatabase().catch((err) => {
+//   console.error(err);
+//   process.exit(1); // stop the server if DB connection fails
+// });
+
+
+// async function main() {
+//     const mongoUri = process.env.MONGO_URI;
+//     await mongoose.connect(mongoUri);
+// }
+// main().then(() => {
+//     console.log('Connected to MongoDB');
+// }).catch((err) => {
+//     console.log(err);
+// });
+
+// const session = require('express-session');
+
+// app.use(session({
+//     secret: process.env.SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: false,
+//     store: new MongoStore({
+//         mongoUrl: 'mongodb://localhost:27017/blog_manager',
+//         collectionName: 'sessions'
+//     }),
+//     cookie: {
+//         maxAge: 1000 * 60 * 60
+//     }
+// }));
+
+// // Middleware to make user available in all views
+// app.use((req, res, next) => {
+//     if (req.session.userId) {
+//         res.locals.user = {
+//             id: req.session.userId,
+//             name: req.session.userName
+//         };
+//     } else {
+//         res.locals.user = null;
+//     }
+//     next();
+// });
+
+// // Middleware to attach logged-in user to req.user
+// app.use(async (req, res, next) => {
+//     if (req.session.userId) {
+//         try {
+//             const user = await User.findById(req.session.userId);
+//             if (user) {
+//                 req.user = user;
+//             }
+//         } catch (err) {
+//             console.error('Error fetching user in middleware:', err);
+//         }
+//     }
+//     next();
+// });
 
 // Defining a function to fetch blogs and render main page
 async function renderBlogList(req, res) {
@@ -417,6 +466,6 @@ app.use((req, res) => {
     res.send('404 Page Not Found');
 });
 
-app.listen(8080, () => {
-    console.log('Server is running on port 8080');
-});
+// app.listen(8080, () => {
+//     console.log('Server is running on port 8080');
+// });
