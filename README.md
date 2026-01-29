@@ -47,6 +47,7 @@ Built as a **learning and portfolio project** using **Node.js, Express, MongoDB,
 ---
 ## 📁 Project Structure
 blog-manager/
+
 ├── models/ # Mongoose models for users & blogs
 
 ├── views/ # EJS templates
@@ -60,13 +61,16 @@ blog-manager/
 └── README.md
 
 1️⃣ **Clone the repository**
+
 git clone https://github.com/your-username/blog-manager.git
 
 cd blog-manager
 
+
 2️⃣ Install dependencies
 
 npm install
+
 
 3️⃣ Add environment variables
 
@@ -74,11 +78,13 @@ Create a .env file in the root directory:
 
 SESSION_SECRET=your_secret_key
 
+
 4️⃣ Start MongoDB
 
 Make sure MongoDB is running locally:
 
 mongod
+
 
 5️⃣ Run the app
 
