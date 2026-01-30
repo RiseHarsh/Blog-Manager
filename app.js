@@ -24,21 +24,18 @@ app.use(express.json());
 app.use(expressLayouts);
 app.set('layout', 'layouts/boilerplate');
 
-// ✅ Session config
+// --- Session ---
 app.use(
     session({
       secret: process.env.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
-      store: new MongoStore({
-        mongoUrl: process.env.MONGO_URI,
-        collectionName: 'sessions',
-      }),
-      cookie: { maxAge: 1000 * 60 * 60 },
+      store: new MongoStore({ mongoUrl: process.env.MONGO_URI, collectionName: 'sessions' }),
+      cookie: { maxAge: 1000 * 60 * 60 }, // 1 hour
     })
   );
   
-  // Middleware to attach user to views
+  // --- Attach user to res.locals ---
   app.use(async (req, res, next) => {
     if (req.session.userId) {
       res.locals.user = { id: req.session.userId, name: req.session.userName };
@@ -53,76 +50,18 @@ app.use(
     next();
   });
   
-  // Connect to DB and start server
-  connectToDatabase()
-    .then(() => {
-      console.log('Connected to MongoDB');
-      const PORT = process.env.PORT || 8080;
-      app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-    })
-    .catch((err) => {
-      console.error('Failed to connect to MongoDB:', err);
-      process.exit(1);
-    });
+  // --- Helper: require login ---
+  function isLoggedIn(req, res, next) {
+    if (!req.session.userId) return res.redirect('/login');
+    next();
+  }
+  
+  // --- Routes ---
+  app.get('/', async (req, res) => {
+    const blog = await blogs.find();
+    res.render('main', { blog });
+  });
 
-// connectToDatabase().catch((err) => {
-//   console.error(err);
-//   process.exit(1); // stop the server if DB connection fails
-// });
-
-
-// async function main() {
-//     const mongoUri = process.env.MONGO_URI;
-//     await mongoose.connect(mongoUri);
-// }
-// main().then(() => {
-//     console.log('Connected to MongoDB');
-// }).catch((err) => {
-//     console.log(err);
-// });
-
-// const session = require('express-session');
-
-// app.use(session({
-//     secret: process.env.SESSION_SECRET,
-//     resave: false,
-//     saveUninitialized: false,
-//     store: new MongoStore({
-//         mongoUrl: 'mongodb://localhost:27017/blog_manager',
-//         collectionName: 'sessions'
-//     }),
-//     cookie: {
-//         maxAge: 1000 * 60 * 60
-//     }
-// }));
-
-// // Middleware to make user available in all views
-// app.use((req, res, next) => {
-//     if (req.session.userId) {
-//         res.locals.user = {
-//             id: req.session.userId,
-//             name: req.session.userName
-//         };
-//     } else {
-//         res.locals.user = null;
-//     }
-//     next();
-// });
-
-// // Middleware to attach logged-in user to req.user
-// app.use(async (req, res, next) => {
-//     if (req.session.userId) {
-//         try {
-//             const user = await User.findById(req.session.userId);
-//             if (user) {
-//                 req.user = user;
-//             }
-//         } catch (err) {
-//             console.error('Error fetching user in middleware:', err);
-//         }
-//     }
-//     next();
-// });
 
 // Defining a function to fetch blogs and render main page
 async function renderBlogList(req, res) {
@@ -136,7 +75,7 @@ async function renderBlogList(req, res) {
 }
 
 // Using the same function for both routes
-app.get('/', renderBlogList);
+// app.get('/', renderBlogList);
 app.get('/blogs', renderBlogList);
 
 app.get('/blogs/views/:id', async (req, res) => {
@@ -176,12 +115,12 @@ app.post('/blogs/:id/increment-views', async (req, res) => {
     }
 });
 
-function isLoggedIn(req, res, next) {
-    if (!req.session.userId) {
-        return res.redirect('/login');
-    }
-    next();
-}
+// function isLoggedIn(req, res, next) {
+//     if (!req.session.userId) {
+//         return res.redirect('/login');
+//     }
+//     next();
+// }
 
 app.get('/myblogs', isLoggedIn, async (req, res) => {
     try {
@@ -469,3 +408,17 @@ app.use((req, res) => {
 // app.listen(8080, () => {
 //     console.log('Server is running on port 8080');
 // });
+
+async function startServer() {
+    try {
+      await connectToDatabase(); // Connect once
+      const PORT = process.env.PORT || 8080;
+      app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    } catch (err) {
+      console.error('Server failed to start:', err);
+      process.exit(1);
+    }
+  }
+  
+  startServer();
+  

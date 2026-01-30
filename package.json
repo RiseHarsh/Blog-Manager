@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@vercel/node": "^5.5.28",
     "bcrypt": "^6.0.0",
     "connect-mongo": "^6.0.0",
     "dotenv": "^17.2.3",
