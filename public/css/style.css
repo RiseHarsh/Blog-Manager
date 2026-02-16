@@ -483,4 +483,146 @@ form button[type="submit"]:hover {
 }
 
 
+/* ============================= */
+/* RESPONSIVE DESIGN */
+/* ============================= */
 
+/* Large tablets (≤1024px) */
+@media (max-width: 1024px) {
+
+    .blog-container {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  
+    .hero-cta {
+      padding: 60px 20px;
+    }
+  
+    .hero-content h1 {
+      font-size: 2.2rem;
+    }
+  
+    .blog-article {
+      padding: 30px;
+    }
+  }
+  
+  
+  /* Tablets & small devices (≤768px) */
+  @media (max-width: 768px) {
+  
+    /* Blog grid */
+    .blog-container {
+      grid-template-columns: 1fr;
+    }
+  
+    .blogs-grid {
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+  
+    /* Hero section */
+    .hero-cta {
+      flex-direction: column;
+      text-align: center;
+      padding: 50px 20px;
+    }
+  
+    .hero-content {
+      padding-right: 0;
+      margin-bottom: 30px;
+    }
+  
+    .hero-content h1 {
+      font-size: 2rem;
+    }
+  
+    .hero-content p {
+      font-size: 1rem;
+    }
+  
+    .cta-buttons a {
+      display: inline-block;
+      margin: 10px 5px;
+    }
+  
+    /* Blog page */
+    .blog-article {
+      padding: 25px 20px;
+    }
+  
+    .blog-title {
+      font-size: 1.8rem;
+    }
+  
+    .blog-meta {
+      flex-direction: column;
+      gap: 6px;
+    }
+  
+    .blog-stats {
+      flex-direction: column;
+      gap: 10px;
+    }
+  
+    /* My blogs header */
+    .myblogs-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+  
+    .blog-actions {
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+  }
+  
+  
+  /* Mobile phones (≤480px) */
+  @media (max-width: 480px) {
+  
+    .hero-content h1 {
+      font-size: 1.6rem;
+    }
+  
+    .hero-content p {
+      font-size: 0.95rem;
+    }
+  
+    .blog-title {
+      font-size: 1.5rem;
+    }
+  
+    .blog-content {
+      font-size: 1rem;
+    }
+  
+    .blog-card {
+      padding: 15px;
+    }
+  
+    .views-count,
+    .likes-count {
+      font-size: 12px;
+      padding: 4px 8px;
+    }
+  
+    .stat {
+      font-size: 0.85rem;
+      padding: 6px 10px;
+    }
+  
+    form {
+      padding: 1.2rem;
+    }
+  
+    form input[type="text"],
+    form textarea {
+      font-size: 0.95rem;
+    }
+  
+    form button[type="submit"] {
+      font-size: 0.95rem;
+    }
+  }
+  
